@@ -93,7 +93,7 @@ $(document).ready(function() {
 $.fn.selectCol = function() {
     var gradesCol = [];
     var index = this.index();
-    if (index === 0) {
+    if (index == 0) {
         this.closest('table').find('td').each((a,b) => {
             $(b).addClass('select');
             gradesCol.push($(b).text());
@@ -124,10 +124,108 @@ $.fn.deselectAll = function() {
     })
 }
 
+const sumCounts = obj => Object.values(obj).reduce((a, b) => a + b);
+
 function plot(numberGrades) {
     var letterGrades = numberGrades.map(getGrade);
-    var gradeFreq = {}
-    letterGrades.forEach(e => gradeFreq[e] ? gradeFreq[e]++ : gradeFreq[e] = 1);
+    var gradeCounts = {}
+    letterGrades.forEach(e => gradeCounts[e] ? gradeCounts[e]++ : gradeCounts[e] = 1);
+    var plotData = []
+    var totalCount = sumCounts(gradeCounts);
+    for (var k in gradeCounts) {
+        plotData.push({letter: k, freq: (gradeCounts[k] / totalCount)});
+    }
+
+    d3.select('svg').remove();
+
+    const margin = 50;
+    const width = 800;
+    const height = 500;
+    const chartWidth = width - 2 * margin;
+    const chartHeight = height - 2 * margin;
+
+    const colourScale = d3.scaleLinear()
+                          .domain([0, 1])
+                          .range(['white', 'blue']);
+    
+    const xScale = d3.scaleBand()
+                     .range([0, chartWidth])
+                     .domain(['A', 'B', 'C', 'D', 'F'])
+                     .padding(0.3);
+    
+    const yScale = d3.scaleLinear()
+                     .range([chartHeight, 0])
+                     .domain([0, 1]);
+    
+    const svg = d3.select('body')
+                  .append('svg')
+                    .attr('width', width)
+                    .attr('height', height);
+    
+    const canvas = svg.append('g')
+                        .attr('transform', `translate(${margin}, ${margin})`);
+    
+    // chart title
+    svg.append('text')
+          .attr('x', margin + chartWidth / 2)
+          .attr('y', margin)
+          .attr('text-anchor', 'middle')
+          .attr('font-weight', 'bold')
+          .text('Grade Distribution');
+
+    // x-axis and label
+    canvas.append('g')
+             .attr('transform', `translate(${margin}, ${chartHeight})`)
+             .call(d3.axisBottom(xScale));
+
+    svg.append('text')
+           .attr('x', margin + chartWidth / 2 + margin)
+           .attr('y', chartHeight + 2 * margin - 15)
+           .attr('text-anchor', 'middle')
+           .attr('font-weight', 'bold')
+           .text('Grade');
+
+    // y-axis and label
+    canvas.append('g')
+             .attr('transform', `translate(${margin}, 0)`)
+             .call(d3.axisLeft(yScale));
+
+    svg.append('text')
+           .attr('x', -margin + -(chartWidth / 2))
+           .attr('y', margin)
+           .attr('transform', 'rotate(-90)')
+           .attr('text-anchor', 'middle')
+           .attr('font-weight', 'bold')
+           .text('Frequency (%)');
+    
+    // the bar chart
+    const bars = canvas.selectAll('rect')
+                       .data(plotData)
+                       .enter()
+                          .append('rect')
+                              .attr('x', (data) => margin + xScale(data.letter))
+                              .attr('y', chartHeight)
+                              .attr('height', 0)
+                              .attr('width', xScale.bandwidth())
+                              .attr('fill', (data) => colourScale(data.freq))
+                              .on('mouseenter', function(source, index) {
+                                  d3.select(this)
+                                    .transition()
+                                    .duration(200)
+                                    .attr('opacity', 0.5);
+                              })
+                              .on('mouseleave', function(source, index) {
+                                d3.select(this)
+                                    .transition()
+                                    .duration(200)
+                                    .attr('opacity', 1.0);
+                              });
+    bars.transition()
+        .ease(d3.easeElastic)
+        .duration(800)
+        .delay((data, index) => index * 50)
+        .attr('y', (data) => yScale(data.freq))
+        .attr('height', (data) => chartHeight - yScale(data.freq));
 }
 
 function getGrade(mark) {
