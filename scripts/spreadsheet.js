@@ -110,7 +110,6 @@ $.fn.selectCol = function() {
 
 $.fn.selectRow = function() {
     var gradesRow = [];
-    index = 0;
     this.closest('tr').find('td').each((a,b) => {
         $(b).addClass('select');
         gradesRow.push($(b).text());
