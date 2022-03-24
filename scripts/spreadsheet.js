@@ -157,7 +157,7 @@ function plot(numberGrades) {
                      .range([chartHeight, 0])
                      .domain([0, 1]);
     
-    const svg = d3.select('body')
+    const svg = d3.select('#svg-div')
                   .append('svg')
                     .attr('width', width)
                     .attr('height', height);
@@ -167,7 +167,7 @@ function plot(numberGrades) {
     
     // chart title
     svg.append('text')
-          .attr('x', margin + chartWidth / 2)
+          .attr('x', margin + chartWidth / 2 + margin)
           .attr('y', margin)
           .attr('text-anchor', 'middle')
           .attr('font-weight', 'bold')
@@ -191,10 +191,10 @@ function plot(numberGrades) {
              .call(d3.axisLeft(yScale));
 
     svg.append('text')
-           .attr('x', -margin + -(chartWidth / 2))
+           .attr('x', margin - (chartWidth / 2))
            .attr('y', margin)
            .attr('transform', 'rotate(-90)')
-           .attr('text-anchor', 'middle')
+           .attr('text-anchor', 'start')
            .attr('font-weight', 'bold')
            .text('Frequency (%)');
     

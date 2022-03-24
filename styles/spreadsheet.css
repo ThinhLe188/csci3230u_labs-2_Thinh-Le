@@ -24,6 +24,10 @@ th {
 	background-color: #d0d0d0;
 }
 
+#svg-div {
+	text-align: center;
+}
+
 .select {
 	background-color: #e0e0ff;
 }
