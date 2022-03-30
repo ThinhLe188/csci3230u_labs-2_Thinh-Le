@@ -1,93 +1,81 @@
 const floatCheck= /^\s*(\+|-)?((\d+(\.\d+)?)|(\.\d+))\s*$/;
 
-const colHeaders1 = ['Student ID', 'Asmt 1', 'Asmt 2', 'Asmt 3'];
-const gradesData1 = [
-    {'id': '100000000', 'asmt-1': 4.5, 'asmt-2': 3.75, 'asmt-3': 3.4},
-    {'id': '100000001', 'asmt-1': 4.25, 'asmt-2': 4.12, 'asmt-3': 4.25},
-    {'id': '100000002', 'asmt-1': 5.0, 'asmt-2': 4.75, 'asmt-3': 4.5},
-];
-
-const colHeaders2 = ['Student ID', 'Asmt 1', 'Asmt 2', 'Asmt 3', 'Midterm', 'Final Exam'];
-const gradesData2 = [
-    {'id': '100000001', 'asmt-1': 92.0, 'asmt-2': 80.0, 'asmt-3': 100.0, 'midterm': 62.5, 'final': 81.5},
-    {'id': '100000002', 'asmt-1': 100.0, 'asmt-2': 85.5, 'asmt-3': 90.0, 'midterm': 75.0, 'final': 90.25},
-    {'id': '100000003', 'asmt-1': 80.0, 'asmt-2': 90.5, 'asmt-3': 90.0, 'midterm': 66.5, 'final': 68.0},
-    {'id': '100000004', 'asmt-1': 100.0, 'asmt-2': 100.0, 'asmt-3': 100.0, 'midterm': 98.0, 'final': 95.5},
-    {'id': '100000005', 'asmt-1': 100.0, 'asmt-2': 90.0, 'asmt-3': 100.0, 'midterm': 58.5, 'final': 72.0},
-    {'id': '100000006', 'asmt-1': 90.5, 'asmt-2': 81.5, 'asmt-3': 95.5, 'midterm': 65.5, 'final': 64.0},
-    {'id': '100000007', 'asmt-1': 40.5, 'asmt-2': 50.5, 'asmt-3': 65.5, 'midterm': 22.5, 'final': 51.0},
-    {'id': '100000008', 'asmt-1': 70.0, 'asmt-2': 75.0, 'asmt-3': 70.0, 'midterm': 55.5, 'final': 21.0},
-    {'id': '100000009', 'asmt-1': 80.0, 'asmt-2': 82.5, 'asmt-3': 65.0, 'midterm': 72.5, 'final': 88.0},
-];
-
 var selected = null;
 var clicked = null;
 var preVal = 0;
 
 $(document).ready(function() {
-    $('#table-1').append('<thead> <tr> </tr> </thead>');
-    $thead = $('#table-1 > thead > tr:first');
-    colHeaders1.forEach(function(colHeader) {
-        $thead.append('<th>' + colHeader + '</th>');
-    });
+    $.ajax({
+        type: "GET",
+        url: "data/grades.csv",
+        dataType: "text",
+        success: function(response) {
+            var rows = response.split('\n');
 
-    $('#table-1').append('<tbody> <tr> </tr> </tbody>');
-    $tbody = $('#table-1 > tbody');
-    gradesData1.forEach(function(data) {
-        $tbody.append('<tr><th scope="row">' + data.id + '</th><td>' + data["asmt-1"] + '</td><td>' + data["asmt-2"] + '</td><td>' + data["asmt-3"] + '</td></tr>');
-    });
-
-    $('#table-2').append('<thead> <tr> </tr> </thead>');
-    $thead = $('#table-2 > thead > tr:first');
-    colHeaders2.forEach(function(colHeader) {
-        $thead.append('<th>' + colHeader + '</th>');
-    });
-
-    $('#table-2').append('<tbody> <tr> </tr> </tbody>');
-    $tbody = $('#table-2 > tbody');
-    gradesData2.forEach(function(data) {
-        $tbody.append('<tr><th scope="row">' + data.id + '</th><td>' + data["asmt-1"] + '</td><td>' + data["asmt-2"] + '</td><td>' + data["asmt-3"] + '</td><td>' + data["midterm"] + '</td><td>' + data["final"] + '</td></tr>');
-    });
-
-    $('th').click(function() {
-        if (selected) {
-            selected.removeClass('select');
-            selected.deselectAll();
-            if (selected.is($(this))) {
-                selected = null;
-                return;
+            var colHeaders = rows[0].split(',');
+            
+            var gradesData = [];
+            for (var i = 1; i < rows.length; i++) {
+                gradesData.push(rows[i].split(','));
             }
-        }
-        $(this).addClass('select');
-        selected = $(this);
-        if (selected.attr('scope') == 'row') {
-            selected.selectRow();
-            return;
-        }
-        selected.selectCol();
-    });
 
-    $('td').click(function() {
-        preVal = $(this).text();
-        $(this).attr('contenteditable', true);
-    });
+            $('#table').append('<thead> <tr> </tr> </thead>');
+            $thead = $('#table > thead > tr:first');
+            colHeaders.forEach(function(colHeader) {
+                $thead.append('<th>' + colHeader + '</th>');
+            });
 
-    $('td').focusout(function() {
-        $(this).text(preVal);
-        $(this).attr('contenteditable', false);
-    })
+            $('#table').append('<tbody> <tr> </tr> </tbody>');
+            $tbody = $('#table > tbody');
+            for (var i = 0; i < gradesData.length; i++) {
+                var $tr = $('<tr/>').appendTo($tbody);
+                $tr.append('<th scope="row">' + gradesData[i][0] + '</th>');
+                for (var j = 1; j < colHeaders.length; j++) {
+                    $tr.append('<td>' + gradesData[i][j] + '</td>');
+                }
+            }
 
-
-    $('td').on("keydown", function(e) {
-        if (e.keyCode == 13) {
-            if (!floatCheck.test($(this).text()) || $(this).text() < 0 || $(this).text() > 100) {
+            $('th').click(function() {
+                if (selected) {
+                    selected.removeClass('select');
+                    selected.deselectAll();
+                    if (selected.is($(this))) {
+                        selected = null;
+                        return;
+                    }
+                }
+                $(this).addClass('select');
+                selected = $(this);
+                if (selected.attr('scope') == 'row') {
+                    selected.selectRow();
+                    return;
+                }
+                selected.selectCol();
+            });
+        
+            $('td').click(function() {
+                preVal = $(this).text();
+                $(this).attr('contenteditable', true);
+            });
+        
+            $('td').focusout(function() {
                 $(this).text(preVal);
-            }
-            e.preventDefault();
-            preVal = $(this).text();
-            $(this).attr('contenteditable', false);
+                $(this).attr('contenteditable', false);
+            })
+        
+        
+            $('td').on("keydown", function(e) {
+                if (e.keyCode == 13) {
+                    if (!floatCheck.test($(this).text()) || $(this).text() < 0 || $(this).text() > 100) {
+                        $(this).text(preVal);
+                    }
+                    e.preventDefault();
+                    preVal = $(this).text();
+                    $(this).attr('contenteditable', false);
+                }
+            });
         }
-    });
+    })
 });
 
 $.fn.selectCol = function() {
@@ -145,7 +133,7 @@ function plot(numberGrades) {
 
     const colourScale = d3.scaleLinear()
                           .domain([0, 1])
-                          .range(['white', 'blue']);
+                          .range(['lavender', 'blue']);
     
     const xScale = d3.scaleBand()
                      .range([0, chartWidth])
