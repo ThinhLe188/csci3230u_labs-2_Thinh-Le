@@ -7,7 +7,7 @@ var preVal = 0;
 $(document).ready(function() {
     $.ajax({
         type: "GET",
-        url: "data/grades.csv",
+        url: "http://127.0.0.1:8000/data/grades.csv",
         dataType: "text",
         success: function(response) {
             var rows = response.split('\n');
